@@ -93,5 +93,35 @@ OptiFund/
 
 ## Usage
 
-### Quick Start (Simple Training)
+### 1. Data Preprocessing
+To preprocess your data and check for errors, run:
+```bash
+python main.py
 ```
+This will load, clean, and merge your stock and ESG datasets, and print a summary.
+
+### 2. Environment Testing
+To test the custom portfolio environment logic:
+```bash
+python test_env.py
+```
+This script runs a few random actions in the environment and prints out the results for debugging.
+
+### 3. Quick RL Training
+To quickly train and test a PPO agent:
+```bash
+python simple_train.py
+```
+This script runs a short training session and prints out basic performance metrics.
+
+### 4. Full RL Training & Evaluation
+For a full training run with evaluation and plots:
+```bash
+python train_rl_agent.py
+```
+This will train the agent, save checkpoints and the best model, and generate performance plots.
+
+---
+
+**Disclaimer:**  
+This project is for research and educational purposes only. The code and results are not intended as financial advice, and should not be used to make real investment decisions. Always consult with a qualified financial professional before investing.
