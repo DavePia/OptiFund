@@ -36,49 +36,53 @@ class PortfolioTrainer:
         self.env = None
         self.model = None
         
-    def load_data(self):
-        """Load and preprocess data"""
+    def load_data(self, split_ratio=0.8):
+        """Load and preprocess data, then split into train/test sets by date."""
         print("Loading and preprocessing data...")
-        
         self.preprocessor = DataPreprocessor()
-        
-        # Preprocess all data
         processed_data = self.preprocessor.preprocess_all()
-        
-        self.returns_data = processed_data['returns']
-        self.cov_matrix = processed_data['cov_matrix']
-        self.esg_scores = processed_data['esg_scores']
-        
-        print(f"Data loaded successfully!")
-        print(f"Number of assets: {len(self.returns_data.columns)}")
-        print(f"Number of time steps: {len(self.returns_data)}")
-        print(f"Date range: {self.returns_data.index[0]} to {self.returns_data.index[-1]}")
-        
-    def create_environment(self, env_params=None):
-        """Create the portfolio environment"""
+        returns = processed_data['returns']
+        esg_scores = processed_data['esg_scores']
+        # Split by date
+        split_idx = int(len(returns) * split_ratio)
+        self.train_returns = returns.iloc[:split_idx]
+        self.test_returns = returns.iloc[split_idx:]
+        self.train_cov = self.train_returns.cov()
+        self.test_cov = self.test_returns.cov()
+        self.train_esg = esg_scores.loc[self.train_returns.columns]
+        self.test_esg = esg_scores.loc[self.test_returns.columns]
+        print(f"Train set: {len(self.train_returns)} steps, Test set: {len(self.test_returns)} steps")
+        print(f"Train date range: {self.train_returns.index[0]} to {self.train_returns.index[-1]}")
+        print(f"Test date range: {self.test_returns.index[0]} to {self.test_returns.index[-1]}")
+
+    def create_environment(self, env_params=None, mode='train'):
+        """Create the portfolio environment for train or test set."""
         if env_params is None:
             env_params = {
                 'initial_balance': 10000,
-                'transaction_cost': 0.001,
+                'transaction_cost': 0.002,  # More realistic
                 'risk_free_rate': 0.02/252,
                 'window_size': 20,
                 'esg_weight': 0.1,
                 'max_position': 0.3,
                 'reward_scaling': 1.0
             }
-        
-        print("Creating portfolio environment...")
-        
+        print(f"Creating portfolio environment for {mode} set...")
+        if mode == 'train':
+            returns_data = self.train_returns
+            cov_matrix = self.train_cov
+            esg_scores = self.train_esg
+        else:
+            returns_data = self.test_returns
+            cov_matrix = self.test_cov
+            esg_scores = self.test_esg
         self.env = PortfolioEnv(
-            returns_data=self.returns_data,
-            cov_matrix=self.cov_matrix,
-            esg_scores=self.esg_scores,
+            returns_data=returns_data,
+            cov_matrix=cov_matrix,
+            esg_scores=esg_scores,
             **env_params
         )
-        
-        # Wrap in Monitor for logging
         self.env = Monitor(self.env)
-        
         print(f"Environment created with {self.env.observation_space.shape[0]} observation dimensions")
         print(f"Action space: {self.env.action_space.shape[0]} dimensions")
         
@@ -317,37 +321,27 @@ class PortfolioTrainer:
         plt.show()
 
 def main():
-    """Main training function"""
-    # Initialize trainer
     trainer = PortfolioTrainer()
-    
-    # Load data
     trainer.load_data()
-    
-    # Create environment
-    trainer.create_environment()
-    
-    # Train PPO agent
+    # Train on train set
+    trainer.create_environment(mode='train')
     print("\n" + "="*50)
     print("TRAINING PPO AGENT")
     print("="*50)
     trainer.train_agent(
         algorithm='PPO',
-        total_timesteps=50000,  # Start with fewer timesteps for testing
-        learning_rate=3e-4,
-        n_steps=1024,
-        batch_size=64
+        total_timesteps=100_000,
+        learning_rate=1e-4,
+        n_steps=2048,
+        batch_size=128
     )
-    
-    # Evaluate the trained agent
+    # Evaluate on test set
     print("\n" + "="*50)
-    print("EVALUATING TRAINED AGENT")
+    print("EVALUATING TRAINED AGENT ON TEST SET")
     print("="*50)
-    results = trainer.evaluate_agent(num_episodes=5)
-    
-    # Plot results
+    trainer.create_environment(mode='test')
+    results = trainer.evaluate_agent(num_episodes=10)
     trainer.plot_results(results, save_path='training_results.png')
-    
     print("\nTraining and evaluation completed!")
 
 if __name__ == "__main__":

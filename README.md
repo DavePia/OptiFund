@@ -15,11 +15,11 @@ OptiFund is a reinforcement learning-based portfolio optimization system that co
 ## Performance
 
 After training and evaluation on 5 episodes:
-- **Average Total Return:** 8.75% (short-term testing)
-- **Average Sharpe Ratio:** 4.535 (excellent risk-adjusted returns)
-- **Average Max Drawdown:** 4.85% (reasonable risk management)
-- **Average Volatility:** 14.38% (low volatility)
-- **Average ESG Score:** 0.557 (good ESG consideration) 
+- **Average Total Return:** 8.87% (short-term testing)
+- **Average Sharpe Ratio:** 4.575 (excellent risk-adjusted returns)
+- **Average Max Drawdown:** 4.87% (reasonable risk management)
+- **Average Volatility:** 14.45% (low volatility)
+- **Average ESG Score:** 0.554 (good ESG consideration)
 
 ## Architecture
 
