@@ -19,7 +19,7 @@ After training and evaluation on 5 episodes:
 - **Average Sharpe Ratio:** 4.535 (excellent risk-adjusted returns)
 - **Average Max Drawdown:** 4.85% (reasonable risk management)
 - **Average Volatility:** 14.38% (low volatility)
-- **Average ESG Score:** 0.557 (good ESG consideration)
+- **Average ESG Score:** 0.557 (good ESG consideration) 
 
 ## Architecture
 
