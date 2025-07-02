@@ -103,16 +103,15 @@ class PortfolioEnv(gym.Env):
         return np.array([current_vol, market_corr, market_momentum])
     
     def reset(self, *, seed=None, options=None):
-        """Reset the environment to initial state"""
         super().reset(seed=seed)
-        
-        self.current_step = self.window_size
+        # Randomize starting step for each episode
+        self.current_step = np.random.randint(self.window_size, len(self.returns_data) - 1)
         self.portfolio_value = self.initial_balance
         self.weights = np.ones(self.n_assets) / self.n_assets  # Equal initial weights
         self.history = []
         self.portfolio_values = [self.initial_balance]
         self.actions_taken = []
-        
+
         return self._get_observation(), {}
     
     def _get_observation(self):
